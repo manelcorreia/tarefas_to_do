@@ -15,8 +15,10 @@ class Leitor:
                 if not linha_limpa:
                     continue
 
-                coluna = linha_limpa.split(",")
+                nome, prioridade, concluida = linha_limpa.split(",")
 
-                tarefa = Tarefa(coluna[0], int(coluna[1]))
+                if concluida.strip().lower() == "true":
+                    yield Tarefa(nome, int(prioridade), True)
 
-                yield tarefa
+                else:
+                    yield Tarefa(nome, int(prioridade), False)

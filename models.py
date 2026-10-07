@@ -4,4 +4,4 @@ from dataclasses import dataclass
 class Tarefa:
     nome: str
     prioridade: int
-    concluida: bool
+    concluida: bool = False

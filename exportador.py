@@ -4,16 +4,16 @@ from models import Tarefa
 
 
 class Exportador:
-    def guardar_dados(self, objetos: Iterable[Tarefa], ficheiro: str) -> None:
-        with open(ficheiro, 'w', encoding='utf-8') as f:
-            f.write("nome,prioridade,concluida\n")
+    @staticmethod
+    def guardar_dados(objetos: Iterable[Tarefa], ficheiro: str = "tarefas_to_do.csv") -> None:
+        with open(ficheiro, 'a', encoding='utf-8') as f:
             for objeto in objetos:
                 linha = f"{objeto.nome},{objeto.prioridade},{objeto.concluida}\n"
                 f.write(linha)
 
-    def ficheiro_tarefas_concluidas(self, objetos: Iterable[Tarefa], ficheiro: str) -> None:
+    @staticmethod
+    def ficheiro_tarefas_concluidas(objetos: Iterable[Tarefa], ficheiro: str = "tarefas_concluidas.csv") -> None:
         with open(ficheiro, 'a', encoding='utf-8') as f:
-            f.write("nome,prioridade,concluida\n")
             for objeto in objetos:
                 if objeto.concluida:
                     linha = f"{objeto.nome},{objeto.prioridade},{objeto.concluida}\n"

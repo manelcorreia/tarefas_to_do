@@ -18,10 +18,12 @@ def main():
         print("2 - Remover tarefa")
         print("3 - Mudar prioridade de uma tarefa")
         print("4 - Marcar como concluida")
-        print("5 - Guardar tarefas concluidas")
-        print("6 - Guardar e sair do programa")
+        print("5 - Ver todas as tarefas")
+        print("6 - Ver tarefas concluidas")
+        print("7 - Guardar tarefas concluidas")
+        print("8 - Guardar e sair do programa")
 
-        opcao = int(input("Opção (1 a 6): "))
+        opcao = int(input("Opção (1 a 8): "))
 
         if opcao == 1:
             nome_tarefa = input("Nome do tarefa: ")
@@ -41,14 +43,26 @@ def main():
             repo.marcar_como_concluida(nome_tarefa)
 
         elif opcao == 5:
-            exportador.ficheiro_tarefas_concluidas(repo.tarefas)
+            tarefas = repo.ver_todas_tarefas()
+            print("\n--- Lista de tarefas ---")
+            for tarefa in tarefas:
+                print(tarefa)
 
         elif opcao == 6:
+            concluidas = repo.ver_tarefas_concluidas()
+            print("\n--- Tarefas concluidas ---")
+            for tarefa in concluidas:
+                print(tarefa)
+
+        elif opcao == 7:
+            exportador.ficheiro_tarefas_concluidas(repo.tarefas)
+
+        elif opcao == 8:
             exportador.guardar_dados(repo.tarefas)
             break
 
         else:
-            print("Opção inválida. Digite um número entre 1 e 6")
+            print("Opção inválida. Digite um número entre 1 e 8")
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':

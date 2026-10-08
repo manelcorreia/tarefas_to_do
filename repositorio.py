@@ -32,3 +32,13 @@ class Repositorio:
             return False
         tarefa.prioridade = nova_prioridade
         return True
+
+    def ver_todas_tarefas(self) -> list[Tarefa]:
+        return self.tarefas
+
+    def ver_tarefas_concluidas(self) -> list[Tarefa]:
+        concluidas = []
+        for tarefa in self.tarefas:
+            if tarefa.concluida:
+                concluidas.append(tarefa)
+        return concluidas

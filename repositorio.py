@@ -5,7 +5,7 @@ from models import Tarefa
 
 class Repositorio:
     def __init__(self, tarefas: list[Tarefa] | None = None):
-        self.tarefas = list[Tarefa] if tarefas is not None else []
+        self.tarefas = tarefas if tarefas is not None else []
 
     def obter_por_nome(self, nome_tarefa: str) -> Tarefa | None:
         for tarefa in self.tarefas:

@@ -1,6 +1,8 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from models.tarefa_model import TarefaModel
+from schemas.tarefa_base_model import TarefaCreate, TarefaUpdate
+
 
 class Repositorio:
     def __init__(self, session: Session):
@@ -11,25 +13,37 @@ class Repositorio:
         tarefa = self.session.scalars(comando).one_or_none()
         return tarefa
 
-    def nova_tarefa(self, nome_tarefa: str, prioridade_tarefa: int, concluida_tarefa: bool = False) -> bool:
-        if self.obter_por_nome(nome_tarefa) is not None:
-            return False
-        tarefa = TarefaModel(nome=nome_tarefa,prioridade=prioridade_tarefa,concluida=concluida_tarefa)
+    def nova_tarefa(self, dados: TarefaCreate) -> TarefaModel:
+        tarefa = TarefaModel(**dados.model_dump())
         self.session.add(tarefa)
-        return True
+        self.session.commit()
+        self.session.refresh(tarefa)
+        return tarefa
 
-    def marcar_como_concluida(self, nome_tarefa: str) -> bool:
-        tarefa = self.obter_por_nome(nome_tarefa)
-        if tarefa is None or tarefa.concluida:
-            return False
-        tarefa.concluida = True
-        return True
+    def obter_por_id(self, tarefa_id: int) -> TarefaModel | None:
+        return self.session.get(TarefaModel, tarefa_id)
 
-    def mudar_prioridade(self, nome_tarefa: str, nova_prioridade: int) -> bool:
-        tarefa = self.obter_por_nome(nome_tarefa)
-        if tarefa is None or tarefa.prioridade == nova_prioridade:
+    def atualizar(self, tarefa_id: int, dados: TarefaUpdate) -> TarefaModel | None:
+        tarefa = self.obter_por_id(tarefa_id)
+        if not tarefa:
+            return None
+
+        dados_atualizados = dados.model_dump(exclude_unset=True)
+
+        for campo, valor in dados_atualizados.items():
+            setattr(tarefa, campo, valor)
+
+        self.session.commit()
+        self.session.refresh(tarefa)
+        return tarefa
+
+    def remover(self, tarefa_id: int) -> bool:
+        tarefa = self.obter_por_id(tarefa_id)
+        if not tarefa:
             return False
-        tarefa.prioridade = nova_prioridade
+
+        self.session.delete(tarefa)
+        self.session.commit()
         return True
 
     def ver_todas_tarefas(self) -> list[TarefaModel]:

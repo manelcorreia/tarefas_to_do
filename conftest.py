@@ -23,11 +23,11 @@ def session():
 
     Base.metadata.create_all(engine)
     with sessionmaker(bind=engine)() as session:
-        yield session      # o teste corre aqui
-    engine.dispose()       # limpeza no fim
+        yield session
+    engine.dispose()
 
 
 @pytest.fixture
 def repo(session):
     """Repositório já ligado à sessão de teste."""
-    return Repositorio(session)   # MUDAR: o teu repositório
+    return Repositorio(session)

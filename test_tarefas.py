@@ -1,44 +1,56 @@
 import pytest
 
-from models import Tarefa
-from repositorio import Repositorio
+from models.tarefa_model import TarefaModel
+from schemas.tarefa_base_model import TarefaCreate, TarefaUpdate
 
 
-@pytest.fixture
-def repo():
-    return Repositorio()
+def test_nova_tarefa(repo, session):
+    tarefa = repo.nova_tarefa(TarefaCreate(nome='test', prioridade=1, concluida=False))
 
-@pytest.fixture
-def tarefa_exemplo():
-    return Tarefa(nome="Estudar Pydantic", prioridade=1)
+    assert tarefa.id is not None
+    assert tarefa.nome == 'test'
+    assert tarefa.prioridade == 1
+    assert tarefa.concluida is False
 
-def test_criacao_tarefa_exemplo(tarefa_exemplo):
-    assert tarefa_exemplo.nome == "Estudar Pydantic"
-    assert tarefa_exemplo.prioridade == 1
-    assert tarefa_exemplo.concluida is False
 
-def test_lista_tarefas(repo):
-    assert repo.nova_tarefa("Estudar",1) == True
+def test_nova_tarefa_invalida(repo, session):
+    with pytest.raises(ValueError):
+        repo.nova_tarefa(TarefaCreate(nome='t3st', prioridade=1, concluida=False))
 
-    assert len(repo.tarefas) == 1
+def test_atualizar_tarefa(repo, session):
+    tarefa = repo.nova_tarefa(TarefaCreate(nome='test', prioridade=1, concluida=False))
 
-def test_obter_tarefa_por_nome(repo):
-    repo.nova_tarefa("Estudar", 1)
+    assert tarefa.prioridade == 1
 
-    tarefa = repo.obter_por_nome("Estudar")
-    assert tarefa is not None
-    assert tarefa == repo.tarefas[0]
+    repo.atualizar(tarefa.id, TarefaUpdate(prioridade=2))
 
-def test_mudar_nivel_prioridade(repo, tarefa_exemplo):
-    repo.tarefas.append(tarefa_exemplo)
-    assert tarefa_exemplo.prioridade == 1
-    sucesso = repo.mudar_prioridade("Estudar Pydantic",2)
+    assert tarefa.prioridade == 2
+
+def test_atualizar_tarefa_invalida(repo, session):
+    tarefa = repo.nova_tarefa(TarefaCreate(nome='test', prioridade=1, concluida=False))
+    with pytest.raises(ValueError):
+        repo.atualizar(tarefa.id, TarefaUpdate(prioridade=-2))
+
+def test_remover_tarefa(repo, session):
+    tarefa = repo.nova_tarefa(TarefaCreate(nome='test', prioridade=1, concluida=False))
+
+    sucesso = repo.remover(tarefa.id)
+
     assert sucesso is True
-    assert tarefa_exemplo.prioridade == 2
 
-def test_marcar_como_concluida(repo, tarefa_exemplo):
-    repo.tarefas.append(tarefa_exemplo)
-    assert tarefa_exemplo.concluida is False
-    sucesso = repo.marcar_como_concluida("Estudar Pydantic")
-    assert sucesso is True
-    assert tarefa_exemplo.concluida is True
+def test_remover_tarefa_invalida(repo, session):
+    insucesso = repo.remover(1)
+
+    assert insucesso is False
+
+def test_listar_todas_tarefas(repo, session):
+    repo.nova_tarefa(TarefaCreate(nome='test', prioridade=1, concluida=False))
+    repo.nova_tarefa(TarefaCreate(nome='teste', prioridade=2, concluida=False))
+
+    tarefas = repo.ver_todas_tarefas()
+
+    assert len(tarefas) == 2
+    assert [(t.nome, t.prioridade, t.concluida) for t in tarefas] == [
+        ("test", 1, False),
+        ("teste", 2, False),
+    ]

@@ -9,11 +9,13 @@ class Repositorio:
         self.session = session
 
     def obter_por_nome(self, nome_tarefa: str) -> TarefaModel | None:
+        """obter tarefa pelo nome"""
         comando = select(TarefaModel).where(TarefaModel.nome == nome_tarefa)
         tarefa = self.session.scalars(comando).one_or_none()
         return tarefa
 
     def nova_tarefa(self, dados: TarefaCreate) -> TarefaModel:
+        """criar uma nova tarefa"""
         tarefa = TarefaModel(**dados.model_dump())
         self.session.add(tarefa)
         self.session.commit()
@@ -21,9 +23,11 @@ class Repositorio:
         return tarefa
 
     def obter_por_id(self, tarefa_id: int) -> TarefaModel | None:
+        """obter tarefa pelo id"""
         return self.session.get(TarefaModel, tarefa_id)
 
     def atualizar(self, tarefa_id: int, dados: TarefaUpdate) -> TarefaModel | None:
+        """atualizar tarefa pelo id"""
         tarefa = self.obter_por_id(tarefa_id)
         if not tarefa:
             return None
@@ -38,6 +42,7 @@ class Repositorio:
         return tarefa
 
     def remover(self, tarefa_id: int) -> bool:
+        """remover tarefa pelo id"""
         tarefa = self.obter_por_id(tarefa_id)
         if not tarefa:
             return False
@@ -47,9 +52,26 @@ class Repositorio:
         return True
 
     def ver_todas_tarefas(self) -> list[TarefaModel]:
+        """ver todas as tarefas registadas na base de dados"""
         return list(self.session.scalars(select(TarefaModel)).all())
 
     def ver_tarefas_concluidas(self) -> list[TarefaModel]:
+        """ver todas as tarefas concluídas registadas na base de dados"""
         comando = select(TarefaModel).where(TarefaModel.concluida).order_by(TarefaModel.prioridade.desc())
         tarefas = list(self.session.scalars(comando).all())
         return tarefas
+
+    def ver_tarefas_de_x_prioridade(self, prioridade: int) -> list[TarefaModel]:
+        """ver todas as tarefas com prioridade igual à pedida"""
+        comando = select(TarefaModel).where(TarefaModel.prioridade == prioridade)
+        return list(self.session.scalars(comando).all())
+
+    def ver_tarefas_min_prioridade(self, prioridade: int) -> list[TarefaModel]:
+        """ver todas as tarefas com prioridade mínima igual à pedida"""
+        comando = select(TarefaModel).where(TarefaModel.prioridade >= prioridade)
+        return list(self.session.scalars(comando).all())
+
+    def ver_tarefas_max_prioridade(self, prioridade: int) -> list[TarefaModel]:
+        """ver todas as tarefas com prioridade máxima igual à pedida"""
+        comando = select(TarefaModel).where(TarefaModel.prioridade <= prioridade)
+        return list(self.session.scalars(comando).all())

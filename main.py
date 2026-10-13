@@ -14,6 +14,8 @@ def main():
     with SessionLocal() as session:
         repo_utilizador = UtilizadorRepositorio(session)
 
+        utilizador = None
+
         while True:
             print("--- Bem-Vindo ---")
             print("\n1. Fazer Login")
@@ -30,7 +32,9 @@ def main():
                 email_utilizador = input("Digite o email do utilizador: ")
                 password_utilizador = input("Digite o password do utilizador: ")
 
-                if repo_utilizador.fazer_login(email_utilizador, password_utilizador) is not None:
+                utilizador = repo_utilizador.fazer_login(email_utilizador, password_utilizador)
+
+                if utilizador:
                     print("Login sucesso!")
                     break
 
@@ -64,8 +68,7 @@ def main():
                     continue
 
                 repo_utilizador.registar_utilizador(dados)
-                print("Registo feito com sucesso! Já está logado!")
-                break
+                print("Registo feito com sucesso! Faça login")
 
             elif opcao_usuario == 3:
                 print("Até à próxima!")
@@ -86,18 +89,35 @@ def main():
             print("5 - Ver tarefas concluidas")
             print("6 - Guardar e sair do programa")
 
-            opcao = int(input("Opção (1 a 6): "))
+            try:
+                opcao = int(input("Opção (1 a 6): "))
+            except ValueError:
+                print("Opção tem de ser um número inteiro")
+                continue
 
             if opcao == 1:
                 nome_tarefa = input("Nome do tarefa: ")
-                prioridade = int(input("Prioridade: "))
-                tarefa_schema = TarefaCreate(nome=nome_tarefa, prioridade=prioridade)
-                repo.nova_tarefa(tarefa_schema)
+                if repo.obter_por_nome(utilizador.id, nome_tarefa):
+                    print(f"Aviso: Já tens uma tarefa registada com o nome '{nome_tarefa}'.")
+                else:
+                    try:
+                        prioridade = int(input("Prioridade: "))
+                        tarefa_schema = TarefaCreate(nome=nome_tarefa, prioridade=prioridade, utilizador_id=utilizador.id)
+                        nova_tarefa = repo.nova_tarefa(tarefa_schema)
+                        print(f"Tarefa '{nova_tarefa.nome}' criada com sucesso! [ID: {nova_tarefa.id}]")
+
+
+                    except ValueError as e:
+                        print(f"Erro nos dados inseridos: {e}")
+
+                    except Exception as e:
+                        print(f"Erro inesperado ao criar tarefa: {e}")
+
 
             elif opcao == 2:
                 try:
                     id_tarefa = int(input("Id da tarefa: "))
-                    if repo.remover(id_tarefa):
+                    if repo.remover(utilizador.id,id_tarefa):
                         print("Tarefa removida com sucesso!")
                     else:
                         print("Tarefa não encontrada")
@@ -111,7 +131,7 @@ def main():
                     print("ID tem de ser número inteiro")
                     continue
 
-                if not repo.obter_por_id(tarefa_id):
+                if not repo.obter_por_id(utilizador.id, tarefa_id):
                     print("Tarefa não encontrada")
                     continue
 
@@ -122,28 +142,41 @@ def main():
                     print("4. Alterar tudo")
                     print("5 - Voltar")
 
-                    sub_opcao = int(input("Opção (1 a 5): "))
+                    try:
+                        sub_opcao = int(input("Opção (1 a 5): "))
+                    except ValueError:
+                        print("Opção tem de ser um número inteiro")
+                        continue
 
                     if sub_opcao == 1:
-                        novo_nome = input("Nome do tarefa: ")
-                        tarefa_update = TarefaUpdate(nome=novo_nome)
-                        repo.atualizar(tarefa_id,tarefa_update)
+                        try:
+                            novo_nome = input("Nome do tarefa: ")
+                            tarefa_update = TarefaUpdate(nome=novo_nome)
+                            repo.atualizar(utilizador.id,tarefa_id,tarefa_update)
+                        except ValueError as e:
+                            print(f"Erro nos dados inseridos: {e}")
 
                     elif sub_opcao == 2:
-                        nova_prioridade = int(input("Prioridade do tarefa: "))
-                        tarefa_update = TarefaUpdate(prioridade=nova_prioridade)
-                        repo.atualizar(tarefa_id,tarefa_update)
+                        try:
+                            nova_prioridade = int(input("Prioridade do tarefa: "))
+                            tarefa_update = TarefaUpdate(prioridade=nova_prioridade)
+                            repo.atualizar(utilizador.id,tarefa_id,tarefa_update)
+                        except ValueError as e:
+                            print(f"Erro nos dados inseridos: {e}")
 
                     elif sub_opcao == 3:
                         tarefa_update = TarefaUpdate(concluida=True)
-                        repo.atualizar(tarefa_id,tarefa_update)
+                        repo.atualizar(utilizador.id,tarefa_id,tarefa_update)
 
                     elif sub_opcao == 4:
-                        novo_nome = input("Nome do tarefa: ")
-                        nova_prioridade = int(input("Prioridade do tarefa: "))
-                        tarefa_update = TarefaUpdate(nome=novo_nome,prioridade=nova_prioridade,concluida=True)
-                        repo.atualizar(tarefa_id,tarefa_update)
-                        break
+                        try:
+                            novo_nome = input("Nome do tarefa: ")
+                            nova_prioridade = int(input("Prioridade do tarefa: "))
+                            tarefa_update = TarefaUpdate(nome=novo_nome,prioridade=nova_prioridade,concluida=True)
+                            repo.atualizar(utilizador.id,tarefa_id,tarefa_update)
+                            break
+                        except ValueError as e:
+                            print(f"Erro nos dados inseridos: {e}")
 
                     elif sub_opcao == 5:
                         break
@@ -152,19 +185,23 @@ def main():
                         print("Opção inválida, digite entre 1 e 5")
 
             elif opcao == 4:
-                tarefas = repo.ver_todas_tarefas()
+                tarefas = repo.ver_todas_tarefas(utilizador.id)
+                if not tarefas:
+                    print("Sem tarefas guardadas")
+
                 print("\n--- Lista de tarefas ---")
                 for tarefa in tarefas:
                     print(tarefa)
 
             elif opcao == 5:
-                concluidas = repo.ver_tarefas_concluidas()
+                concluidas = repo.ver_tarefas_concluidas(utilizador.id)
+                if not concluidas:
+                    print("Sem tarefas guardadas")
                 print("\n--- Tarefas concluidas ---")
                 for tarefa in concluidas:
                     print(tarefa)
 
             elif opcao == 6:
-                session.commit()
                 break
 
             else:

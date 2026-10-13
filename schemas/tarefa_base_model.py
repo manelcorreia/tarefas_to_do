@@ -4,6 +4,7 @@ class TarefaBaseModel(BaseModel):
     nome: str = Field(min_length=4, max_length=120)
     prioridade: int = Field(ge=1, le=5)
     concluida: bool = Field(default=False)
+    utilizador_id: int
 
     @field_validator('nome')
     @classmethod

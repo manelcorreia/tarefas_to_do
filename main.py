@@ -1,15 +1,81 @@
+from pydantic import ValidationError
+
 from engine import SessionLocal, engine
 from models.tarefa_model import Base
-from repository.repositorio import Repositorio
+from repository.tarefa_repositorio import TarefaRepositorio
+from repository.utilizador_repositorio import UtilizadorRepositorio
 from schemas.tarefa_base_model import TarefaCreate, TarefaUpdate
+from schemas.utilizador_base_model import UtilizadorCreate, UtilizadorUpdate
 
 
 def main():
     Base.metadata.create_all(engine)
 
     with SessionLocal() as session:
+        repo_utilizador = UtilizadorRepositorio(session)
 
-        repo = Repositorio(session)
+        while True:
+            print("--- Bem-Vindo ---")
+            print("\n1. Fazer Login")
+            print("2. Fazer Registo")
+            print("3. Sair")
+
+            try:
+                opcao_usuario = int(input("Opção (1 a 3): "))
+            except ValueError:
+                print("Opção tem de ser um número inteiro")
+                continue
+
+            if opcao_usuario == 1:
+                email_utilizador = input("Digite o email do utilizador: ")
+                password_utilizador = input("Digite o password do utilizador: ")
+
+                if repo_utilizador.fazer_login(email_utilizador, password_utilizador) is not None:
+                    print("Login sucesso!")
+                    break
+
+                else:
+                    print("Email ou password incorretos.")
+
+            elif opcao_usuario == 2:
+                nome = input("Digite o nome: ")
+                nome_utilizador = input("Digite o nome do utilizador: ")
+                email_utilizador = input("Digite o email do utilizador: ")
+                password_utilizador = input("Digite o password do utilizador: ")
+
+                try:
+                    dados = UtilizadorCreate(
+                        nome=nome,
+                        nome_utilizador=nome_utilizador,
+                        email=email_utilizador,
+                        password=password_utilizador,
+                    )
+                except ValidationError as e:
+                    for erro in e.errors():
+                        print(f"Erro em '{erro['loc'][0]}': {erro['msg']}")
+                    continue
+
+                if repo_utilizador.obter_por_email(dados.email):
+                    print("Esse email já está registado")
+                    continue
+
+                if repo_utilizador.obter_por_nome_utilizador(dados.nome_utilizador):
+                    print("Nome utilizado já está registado")
+                    continue
+
+                repo_utilizador.registar_utilizador(dados)
+                print("Registo feito com sucesso! Já está logado!")
+                break
+
+            elif opcao_usuario == 3:
+                print("Até à próxima!")
+                return
+
+            else:
+                print("Opção inválida, digite entre 1 e 3.")
+
+
+        repo = TarefaRepositorio(session)
 
         while True:
             print("--- TAREFAS TO DO ---")

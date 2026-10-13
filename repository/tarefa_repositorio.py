@@ -4,7 +4,7 @@ from models.tarefa_model import TarefaModel
 from schemas.tarefa_base_model import TarefaCreate, TarefaUpdate
 
 
-class Repositorio:
+class TarefaRepositorio:
     def __init__(self, session: Session):
         self.session = session
 

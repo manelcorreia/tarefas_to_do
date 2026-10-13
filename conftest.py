@@ -4,7 +4,7 @@ from sqlalchemy.pool import StaticPool
 from sqlalchemy.orm import sessionmaker
 
 from models.tarefa_model import Base
-from repository.repositorio import Repositorio
+from repository.tarefa_repositorio import TarefaRepositorio
 
 
 @pytest.fixture
@@ -30,4 +30,4 @@ def session():
 @pytest.fixture
 def repo(session):
     """Repositório já ligado à sessão de teste."""
-    return Repositorio(session)
+    return TarefaRepositorio(session)

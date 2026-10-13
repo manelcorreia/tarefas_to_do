@@ -1,8 +1,13 @@
-from sqlalchemy import String
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from typing import TYPE_CHECKING
 
-class Base(DeclarativeBase):
-    pass
+from sqlalchemy import String, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from models.base import Base
+
+if TYPE_CHECKING:
+    from models.utilizador_model import UtilizadorModel
+
 
 class TarefaModel(Base):
     __tablename__ = 'tarefas'
@@ -11,6 +16,10 @@ class TarefaModel(Base):
     nome: Mapped[str] = mapped_column(String(120))
     prioridade: Mapped[int] = mapped_column()
     concluida: Mapped[bool] = mapped_column(default=False)
+
+    utilizador_id: Mapped[int] = mapped_column(ForeignKey('utilizadores.id', ondelete='CASCADE'))
+
+    utilizador: Mapped["UtilizadorModel"] = relationship(back_populates="tarefas")
 
     def __repr__(self):
         return f'{self.nome} | {self.prioridade} | {self.concluida}'

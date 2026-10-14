@@ -4,8 +4,8 @@ from engine import SessionLocal, engine
 from models.tarefa_model import Base
 from repository.tarefa_repositorio import TarefaRepositorio
 from repository.utilizador_repositorio import UtilizadorRepositorio
-from schemas.tarefa_base_model import TarefaCreate, TarefaUpdate
-from schemas.utilizador_base_model import UtilizadorCreate, UtilizadorUpdate
+from schemas.tarefa_base_model import TarefaCreate, TarefaUpdate, TarefaResponse
+from schemas.utilizador_base_model import UtilizadorCreate, UtilizadorResponse
 
 
 def main():
@@ -104,7 +104,10 @@ def main():
                         prioridade = int(input("Prioridade: "))
                         tarefa_schema = TarefaCreate(nome=nome_tarefa, prioridade=prioridade, utilizador_id=utilizador.id)
                         nova_tarefa = repo.nova_tarefa(tarefa_schema)
-                        print(f"Tarefa '{nova_tarefa.nome}' criada com sucesso! [ID: {nova_tarefa.id}]")
+                        if not nova_tarefa:
+                            print("Tarefa não foi criada")
+                        tarefa_response = TarefaResponse.model_validate(nova_tarefa)
+                        print(f"Tarefa '{tarefa_response.nome}' criada com sucesso! [ID: {tarefa_response.id}]")
 
 
                     except ValueError as e:
@@ -152,7 +155,9 @@ def main():
                         try:
                             novo_nome = input("Nome do tarefa: ")
                             tarefa_update = TarefaUpdate(nome=novo_nome)
-                            repo.atualizar(utilizador.id,tarefa_id,tarefa_update)
+                            tarefa_atualizada = repo.atualizar(utilizador.id,tarefa_id,tarefa_update)
+                            response_tarefa = TarefaResponse.model_validate(tarefa_atualizada)
+                            print(f"Nome da tarefa atualizada com sucesso para {response_tarefa.nome}")
                         except ValueError as e:
                             print(f"Erro nos dados inseridos: {e}")
 
@@ -160,20 +165,27 @@ def main():
                         try:
                             nova_prioridade = int(input("Prioridade do tarefa: "))
                             tarefa_update = TarefaUpdate(prioridade=nova_prioridade)
-                            repo.atualizar(utilizador.id,tarefa_id,tarefa_update)
+                            atualizada_tarefa = repo.atualizar(utilizador.id,tarefa_id,tarefa_update)
+                            response_schema = TarefaResponse.model_validate(atualizada_tarefa)
+                            print(f"Prioridade tarefa atualizada com sucesso para {response_schema.prioridade}")
                         except ValueError as e:
                             print(f"Erro nos dados inseridos: {e}")
 
                     elif sub_opcao == 3:
                         tarefa_update = TarefaUpdate(concluida=True)
-                        repo.atualizar(utilizador.id,tarefa_id,tarefa_update)
+                        update_tarefa = repo.atualizar(utilizador.id,tarefa_id,tarefa_update)
+                        resposta_tarefa = TarefaResponse.model_validate(update_tarefa)
+                        print(f"Tarefa está concluída? {resposta_tarefa.concluida}")
+
 
                     elif sub_opcao == 4:
                         try:
                             novo_nome = input("Nome do tarefa: ")
                             nova_prioridade = int(input("Prioridade do tarefa: "))
                             tarefa_update = TarefaUpdate(nome=novo_nome,prioridade=nova_prioridade,concluida=True)
-                            repo.atualizar(utilizador.id,tarefa_id,tarefa_update)
+                            tarefa_update = repo.atualizar(utilizador.id,tarefa_id,tarefa_update)
+                            tarefa_resposta = TarefaResponse.model_validate(tarefa_update)
+                            print(f"Informações da tarefa atualizados com sucesso! Nome: {tarefa_resposta.nome} | Prioridade: {tarefa_resposta.prioridade} | Concluida: {tarefa_resposta.concluida}")
                             break
                         except ValueError as e:
                             print(f"Erro nos dados inseridos: {e}")
@@ -191,7 +203,8 @@ def main():
 
                 print("\n--- Lista de tarefas ---")
                 for tarefa in tarefas:
-                    print(tarefa)
+                    tarefa_response_schema = TarefaResponse.model_validate(tarefa)
+                    print(tarefa_response_schema)
 
             elif opcao == 5:
                 concluidas = repo.ver_tarefas_concluidas(utilizador.id)
@@ -199,7 +212,8 @@ def main():
                     print("Sem tarefas guardadas")
                 print("\n--- Tarefas concluidas ---")
                 for tarefa in concluidas:
-                    print(tarefa)
+                    schema_response_tarefa = TarefaResponse.model_validate(tarefa)
+                    print(schema_response_tarefa)
 
             elif opcao == 6:
                 break
@@ -207,6 +221,5 @@ def main():
             else:
                 print("Opção inválida. Digite um número entre 1 e 8")
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     main()

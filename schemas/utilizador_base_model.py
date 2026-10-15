@@ -2,12 +2,13 @@ import string
 
 from pydantic import BaseModel, Field, field_validator, EmailStr, ConfigDict
 
+from schemas.tarefa_base_model import TarefaResponse
+
 
 class UtilizadorBaseModel(BaseModel):
     nome: str = Field(min_length=3, max_length=120)
     nome_utilizador: str = Field(min_length=3, max_length=120)
     email: EmailStr
-    password: str = Field(min_length=8, max_length=120)
 
     @field_validator('nome')
     @classmethod
@@ -15,6 +16,9 @@ class UtilizadorBaseModel(BaseModel):
         if any(l.isdigit() for l in valor):
             raise ValueError("Nome não pode ter números")
         return valor
+
+class UtilizadorCreate(UtilizadorBaseModel):
+    password: str = Field(min_length=8, max_length=120)
 
     @field_validator('password')
     @classmethod
@@ -36,9 +40,6 @@ class UtilizadorBaseModel(BaseModel):
             raise ValueError("Password tem de ter pelo menos 1 especial")
 
         return valor
-
-class UtilizadorCreate(UtilizadorBaseModel):
-    pass
 
 class UtilizadorUpdate(BaseModel):
     nome: str | None = Field(default=None, min_length=3, max_length=120)
@@ -78,3 +79,6 @@ class UtilizadorResponse(UtilizadorBaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+
+class UtilizadorDetalhe(UtilizadorResponse):
+    tarefas: list[TarefaResponse] = []

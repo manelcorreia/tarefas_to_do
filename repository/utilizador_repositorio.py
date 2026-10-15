@@ -46,7 +46,6 @@ class UtilizadorRepositorio:
 
         self.session.delete(utilizador)
         self.session.commit()
-        self.session.refresh(utilizador)
         return True
 
     def fazer_login(self, email: str, password: str) -> UtilizadorModel | None:
@@ -56,3 +55,11 @@ class UtilizadorRepositorio:
         if utilizador is not None:
             return utilizador
         return None
+
+    def confirmar_com_password(self, utilizador_id: int, password: str) -> bool:
+        """confirmar qualquer ação através da password"""
+        comando = select(UtilizadorModel).where(UtilizadorModel.id == utilizador_id, UtilizadorModel.password == password)
+        utilizador = self.session.scalars(comando).one_or_none()
+        if utilizador:
+            return True
+        return False

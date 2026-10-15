@@ -5,7 +5,7 @@ from models.tarefa_model import Base
 from repository.tarefa_repositorio import TarefaRepositorio
 from repository.utilizador_repositorio import UtilizadorRepositorio
 from schemas.tarefa_base_model import TarefaCreate, TarefaUpdate, TarefaResponse
-from schemas.utilizador_base_model import UtilizadorCreate, UtilizadorResponse
+from schemas.utilizador_base_model import UtilizadorCreate, UtilizadorResponse, UtilizadorDetalhe, UtilizadorUpdate
 
 
 def main():
@@ -87,10 +87,11 @@ def main():
             print("3 - Atualizar tarefa")
             print("4 - Ver todas as tarefas")
             print("5 - Ver tarefas concluidas")
-            print("6 - Guardar e sair do programa")
+            print("6 - Meu perfil")
+            print("7 - Guardar e sair do programa")
 
             try:
-                opcao = int(input("Opção (1 a 6): "))
+                opcao = int(input("Opção (1 a 7): "))
             except ValueError:
                 print("Opção tem de ser um número inteiro")
                 continue
@@ -216,10 +217,98 @@ def main():
                     print(schema_response_tarefa)
 
             elif opcao == 6:
+                while True:
+                    print("--- Meu Perfil ---")
+                    perfil_utilizador = UtilizadorDetalhe.model_validate(utilizador)
+                    print(f"Nome: {perfil_utilizador.nome}")
+                    print(f"Nome Utilizador: {perfil_utilizador.nome_utilizador}")
+                    print(f"Email: {perfil_utilizador.email}")
+                    print(f"Número de tarefas: {len(perfil_utilizador.tarefas)}")
+
+                    print("\n1. Alterar nome")
+                    print("2. Alterar email")
+                    print("3. Alterar password")
+                    print("4. Apagar conta")
+                    print("5. Voltar")
+
+                    try:
+                        opcao_utilizador = int(input("Opção (1 a 5): "))
+                    except ValueError:
+                        print("Digite um número inteiro!")
+                        continue
+
+                    if opcao_utilizador == 1:
+                        try:
+                            nome_novo = input("Nome: ")
+                            dados_atualizacao = UtilizadorUpdate(nome=nome_novo)
+                            password_confirmacao = input("Digite password para confirmar alterações: ")
+                            if repo_utilizador.confirmar_com_password(utilizador.id, password_confirmacao):
+                                repo_utilizador.atualizar_dados_utilizador(dados_atualizacao, utilizador)
+                                print("\nAlterado com sucesso!")
+                            else:
+                                print("Password errada.")
+                        except (ValueError, ValidationError) as e:
+                            print(f"Erro nos dados inseridos: {e}")
+
+                    elif opcao_utilizador == 2:
+                        try:
+                            email_novo = input("Email: ")
+                            atualizacao_dados = UtilizadorUpdate(email=email_novo)
+
+                            if repo_utilizador.obter_por_email(atualizacao_dados.email):
+                                print("Esse email já se encontra em uso.")
+                                continue
+
+                            confirmacao_pass = input("Digite password para confirmar alterações: ")
+                            if repo_utilizador.confirmar_com_password(utilizador.id, confirmacao_pass):
+                                repo_utilizador.atualizar_dados_utilizador(atualizacao_dados, utilizador)
+                                print("\nAlterado com sucesso!")
+                            else:
+                                print("Password errada.")
+                        except (ValueError, ValidationError) as e:
+                            print(f"Erro nos dados inseridos: {e}")
+
+                    elif opcao_utilizador == 3:
+                        try:
+                            password_novo = input("Password: ")
+                            nova_pass = UtilizadorUpdate(password=password_novo)
+                            update_pass = input("Digite password para confirmar as alterações: ")
+                            if repo_utilizador.confirmar_com_password(utilizador.id, update_pass):
+                                repo_utilizador.atualizar_dados_utilizador(nova_pass, utilizador)
+                                print("\nAlterado com sucesso!")
+                            else:
+                                print("Password errada.")
+                        except (ValueError, ValidationError) as e:
+                            print(f"Erro nos dados inseridos: {e}")
+
+                    elif opcao_utilizador == 4:
+                        try:
+                            password = input("Password: ")
+                            if repo_utilizador.confirmar_com_password(utilizador.id, password):
+                                repo_utilizador.apagar_utilizador(utilizador)
+                                print("\nConta apagada")
+                                utilizador = None
+                                break
+                            else:
+                                print("Password errada.")
+                        except (ValueError, ValidationError) as e:
+                            print(f"Erro nos dados inseridos: {e}")
+
+
+                    elif opcao_utilizador == 5:
+                        break
+
+                    else:
+                        print("Opção inválida, digite um número inteiro entre 1 e 5!")
+
+            if utilizador is None:
+                break
+
+            elif opcao == 7:
                 break
 
             else:
-                print("Opção inválida. Digite um número entre 1 e 8")
+                print("Opção inválida. Digite um número entre 1 e 7")
 
 if __name__ == '__main__':
     main()

@@ -5,6 +5,7 @@ from sqlalchemy.orm import sessionmaker
 
 from models.tarefa_model import Base
 from repository.tarefa_repositorio import TarefaRepositorio
+from repository.utilizador_repositorio import UtilizadorRepositorio
 
 
 @pytest.fixture
@@ -31,3 +32,7 @@ def session():
 def repo(session):
     """Repositório já ligado à sessão de teste."""
     return TarefaRepositorio(session)
+
+@pytest.fixture
+def repo_utilizador(session):
+    return UtilizadorRepositorio(session)

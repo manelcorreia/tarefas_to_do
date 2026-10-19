@@ -3,9 +3,9 @@ from sqlalchemy import create_engine, event
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.orm import sessionmaker
 
-from models.tarefa_model import Base
-from repository.tarefa_repositorio import TarefaRepositorio
-from repository.utilizador_repositorio import UtilizadorRepositorio
+from src.models.tarefa_model import Base
+from src.repositories.tarefa_repositorio import TarefaRepositorio
+from src.repositories.utilizador_repositorio import UtilizadorRepositorio
 
 
 @pytest.fixture

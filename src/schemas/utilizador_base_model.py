@@ -2,7 +2,7 @@ import string
 
 from pydantic import BaseModel, Field, field_validator, EmailStr, ConfigDict
 
-from schemas.tarefa_base_model import TarefaResponse
+from src.schemas.tarefa_base_model import TarefaResponse
 
 
 class UtilizadorBaseModel(BaseModel):

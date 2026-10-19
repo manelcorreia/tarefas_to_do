@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from models.utilizador_model import UtilizadorModel
-from schemas.utilizador_base_model import UtilizadorCreate, UtilizadorUpdate
+from src.models.utilizador_model import UtilizadorModel
+from src.schemas.utilizador_base_model import UtilizadorCreate, UtilizadorUpdate
 
 
 class UtilizadorRepositorio:

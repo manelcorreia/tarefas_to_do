@@ -1,10 +1,10 @@
 from pydantic import ValidationError
 
-from engine import SessionLocal, engine
-from repository.tarefa_repositorio import TarefaRepositorio
-from repository.utilizador_repositorio import UtilizadorRepositorio
-from schemas.tarefa_base_model import TarefaCreate, TarefaUpdate, TarefaResponse
-from schemas.utilizador_base_model import UtilizadorCreate, UtilizadorResponse, UtilizadorDetalhe, UtilizadorUpdate
+from src.core.engine import SessionLocal
+from src.repositories.tarefa_repositorio import TarefaRepositorio
+from src.repositories.utilizador_repositorio import UtilizadorRepositorio
+from src.schemas.tarefa_base_model import TarefaCreate, TarefaUpdate, TarefaResponse
+from src.schemas.utilizador_base_model import UtilizadorCreate, UtilizadorDetalhe, UtilizadorUpdate
 
 
 def main():

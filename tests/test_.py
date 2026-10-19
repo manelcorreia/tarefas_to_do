@@ -1,8 +1,8 @@
 import pytest
 from pydantic import ValidationError
 
-from schemas.tarefa_base_model import TarefaCreate, TarefaUpdate, TarefaResponse
-from schemas.utilizador_base_model import UtilizadorCreate, UtilizadorUpdate
+from src.schemas.tarefa_base_model import TarefaCreate, TarefaUpdate
+from src.schemas.utilizador_base_model import UtilizadorCreate, UtilizadorUpdate
 
 
 def test_nova_tarefa(repo, repo_utilizador, session):

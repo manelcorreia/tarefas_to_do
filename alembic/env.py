@@ -10,10 +10,7 @@ from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
-from models.tarefa_model import TarefaModel
-from models.base import Base
-from models.utilizador_model import UtilizadorModel
-
+from src.models.base import Base
 
 # Carrega as variáveis do ficheiro .env localizado na raiz
 caminho_env = os.path.join(dirname(dirname(abspath(__file__))), ".env")

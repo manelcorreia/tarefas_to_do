@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from models.tarefa_model import TarefaModel
-from schemas.tarefa_base_model import TarefaCreate, TarefaUpdate
+from src.models.tarefa_model import TarefaModel
+from src.schemas.tarefa_base_model import TarefaCreate, TarefaUpdate
 
 class TarefaRepositorio:
     def __init__(self, session: Session):

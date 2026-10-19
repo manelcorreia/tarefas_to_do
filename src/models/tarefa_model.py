@@ -4,10 +4,10 @@ from typing import TYPE_CHECKING
 from sqlalchemy import String, ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from models.base import Base
+from src.models.base import Base
 
 if TYPE_CHECKING:
-    from models.utilizador_model import UtilizadorModel
+    from src.models.utilizador_model import UtilizadorModel
 
 
 class TarefaModel(Base):

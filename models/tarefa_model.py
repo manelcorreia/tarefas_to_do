@@ -1,6 +1,7 @@
+import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import String, ForeignKey
+from sqlalchemy import String, ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from models.base import Base
@@ -16,6 +17,7 @@ class TarefaModel(Base):
     nome: Mapped[str] = mapped_column(String(120))
     prioridade: Mapped[int] = mapped_column()
     concluida: Mapped[bool] = mapped_column(default=False)
+    data_registo: Mapped[datetime.date] = mapped_column(server_default=func.current_date())
 
     utilizador_id: Mapped[int] = mapped_column(ForeignKey('utilizadores.id', ondelete='CASCADE'))
 

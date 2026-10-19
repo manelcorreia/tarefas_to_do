@@ -1,7 +1,6 @@
 from pydantic import ValidationError
 
 from engine import SessionLocal, engine
-from models.tarefa_model import Base
 from repository.tarefa_repositorio import TarefaRepositorio
 from repository.utilizador_repositorio import UtilizadorRepositorio
 from schemas.tarefa_base_model import TarefaCreate, TarefaUpdate, TarefaResponse
@@ -9,7 +8,7 @@ from schemas.utilizador_base_model import UtilizadorCreate, UtilizadorResponse, 
 
 
 def main():
-    Base.metadata.create_all(engine)
+    # Base.metadata.create_all(engine)
 
     with SessionLocal() as session:
         repo_utilizador = UtilizadorRepositorio(session)

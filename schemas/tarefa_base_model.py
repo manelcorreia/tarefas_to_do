@@ -1,3 +1,5 @@
+import datetime
+
 from pydantic import BaseModel, Field, field_validator, ConfigDict
 
 class TarefaBaseModel(BaseModel):
@@ -5,6 +7,7 @@ class TarefaBaseModel(BaseModel):
     prioridade: int = Field(ge=1, le=5)
     concluida: bool = Field(default=False)
     utilizador_id: int
+    data_registo: datetime.date
 
     @field_validator('nome')
     @classmethod

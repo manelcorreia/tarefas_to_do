@@ -20,8 +20,6 @@ class TarefaRepositorio:
         """criar uma nova tarefa"""
         tarefa = TarefaModel(**dados.model_dump())
         self.session.add(tarefa)
-        self.session.commit()
-        self.session.refresh(tarefa)
         return tarefa
 
     def obter_por_id(self, utilizador_id: int,tarefa_id: int) -> TarefaModel | None:
@@ -29,30 +27,18 @@ class TarefaRepositorio:
         comando = select(TarefaModel).where(TarefaModel.utilizador_id == utilizador_id, TarefaModel.id == tarefa_id)
         return self.session.scalars(comando).one_or_none()
 
-    def atualizar(self, utilizador_id: int , tarefa_id: int, dados: TarefaUpdate) -> TarefaModel | None:
+    def atualizar(self, tarefa: TarefaModel, dados: TarefaUpdate):
         """atualizar tarefa pelo id"""
-        tarefa = self.obter_por_id(utilizador_id, tarefa_id)
-        if not tarefa:
-            return None
-
         dados_atualizados = dados.model_dump(exclude_unset=True)
 
         for campo, valor in dados_atualizados.items():
             setattr(tarefa, campo, valor)
 
-        self.session.commit()
-        self.session.refresh(tarefa)
         return tarefa
 
-    def remover(self, utilizador_id: int,tarefa_id: int) -> bool:
+    def remover(self, tarefa: TarefaModel) -> None:
         """remover tarefa pelo id"""
-        tarefa = self.obter_por_id(utilizador_id, tarefa_id)
-        if not tarefa:
-            return False
-
         self.session.delete(tarefa)
-        self.session.commit()
-        return True
 
     def ver_todas_tarefas(self, utilizador_id: int) -> list[TarefaModel]:
         """ver todas as tarefas registadas na base de dados"""

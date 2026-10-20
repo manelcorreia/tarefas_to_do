@@ -1,3 +1,5 @@
+import datetime
+
 from pydantic import ValidationError
 
 from src.core.engine import SessionLocal
@@ -5,13 +7,15 @@ from src.repositories.tarefa_repositorio import TarefaRepositorio
 from src.repositories.utilizador_repositorio import UtilizadorRepositorio
 from src.schemas.tarefa_base_model import TarefaCreate, TarefaUpdate, TarefaResponse
 from src.schemas.utilizador_base_model import UtilizadorCreate, UtilizadorDetalhe, UtilizadorUpdate
-
+from src.services.tarefa_service import TarefaService
 
 def main():
     # Base.metadata.create_all(engine)
 
     with SessionLocal() as session:
         repo_utilizador = UtilizadorRepositorio(session)
+        tarefa_repositorio = TarefaRepositorio(session)
+        servico_tarefa = TarefaService(session, tarefa_repositorio)
 
         utilizador = None
 
@@ -96,46 +100,41 @@ def main():
                 continue
 
             if opcao == 1:
-                nome_tarefa = input("Nome do tarefa: ")
-                if repo.obter_por_nome(utilizador.id, nome_tarefa):
-                    print(f"Aviso: Já tens uma tarefa registada com o nome '{nome_tarefa}'.")
-                else:
-                    try:
-                        prioridade = int(input("Prioridade: "))
-                        tarefa_schema = TarefaCreate(nome=nome_tarefa, prioridade=prioridade, utilizador_id=utilizador.id)
-                        nova_tarefa = repo.nova_tarefa(tarefa_schema)
-                        if not nova_tarefa:
-                            print("Tarefa não foi criada")
-                        tarefa_response = TarefaResponse.model_validate(nova_tarefa)
-                        print(f"Tarefa '{tarefa_response.nome}' criada com sucesso! [ID: {tarefa_response.id}]")
+                try:
+                    nome_tarefa = input("Nome do tarefa: ")
+                    prioridade = int(input("Prioridade: "))
+                    tarefa_schema = TarefaCreate(nome=nome_tarefa, prioridade=prioridade, utilizador_id=utilizador.id, data_registo=datetime.date.today())
+                    tarefa_criada = servico_tarefa.adicionar_nova_tarefa(tarefa_schema)
+                    print(f"Tarefa '{tarefa_criada.nome}' criada com sucesso")
 
-
-                    except ValueError as e:
-                        print(f"Erro nos dados inseridos: {e}")
-
-                    except Exception as e:
-                        print(f"Erro inesperado ao criar tarefa: {e}")
-
+                except ValidationError as e:
+                    for erro in e.errors():
+                        print(f"Erro: {erro['loc'][0]}: {erro['msg']}")
+                except ValueError as e:
+                    print(f"Erro: {e}")
+                except Exception as e:
+                    print(f"Erro inesperado: {e}")
 
             elif opcao == 2:
                 try:
                     id_tarefa = int(input("Id da tarefa: "))
-                    if repo.remover(utilizador.id,id_tarefa):
-                        print("Tarefa removida com sucesso!")
-                    else:
-                        print("Tarefa não encontrada")
-                except ValueError:
-                    print("ID tem de ser número inteiro")
+                    servico_tarefa.remover_tarefa(utilizador.id, id_tarefa)
+                    print(f"Tarefa removida com sucesso")
+                except ValidationError as e:
+                    print(f"Erro: {e}")
+
+                except ValueError as e:
+                    print(f"Erro: {e}")
+
+                except Exception as e:
+                    print(f"Erro inesperado: {e}")
 
             elif opcao == 3:
                 try:
                     tarefa_id = int(input("Tarefa ID: "))
+                    servico_tarefa.obter_tarefa_por_id(utilizador.id, tarefa_id)
                 except ValueError:
-                    print("ID tem de ser número inteiro")
-                    continue
-
-                if not repo.obter_por_id(utilizador.id, tarefa_id):
-                    print("Tarefa não encontrada")
+                    print(f"Opção tem de ser número inteiro")
                     continue
 
                 while True:
@@ -151,69 +150,70 @@ def main():
                         print("Opção tem de ser um número inteiro")
                         continue
 
-                    if sub_opcao == 1:
-                        try:
+                    try:
+                        if sub_opcao == 1:
                             novo_nome = input("Nome do tarefa: ")
                             tarefa_update = TarefaUpdate(nome=novo_nome)
-                            tarefa_atualizada = repo.atualizar(utilizador.id,tarefa_id,tarefa_update)
-                            response_tarefa = TarefaResponse.model_validate(tarefa_atualizada)
-                            print(f"Nome da tarefa atualizada com sucesso para {response_tarefa.nome}")
-                        except ValueError as e:
-                            print(f"Erro nos dados inseridos: {e}")
+                            tarefa_atualizada = servico_tarefa.atualizar_tarefa(utilizador.id, tarefa_id, tarefa_update)
+                            print(f"Nome da tarefa atualizada com sucesso para {tarefa_atualizada.nome}")
 
-                    elif sub_opcao == 2:
-                        try:
+                        elif sub_opcao == 2:
                             nova_prioridade = int(input("Prioridade do tarefa: "))
                             tarefa_update = TarefaUpdate(prioridade=nova_prioridade)
-                            atualizada_tarefa = repo.atualizar(utilizador.id,tarefa_id,tarefa_update)
-                            response_schema = TarefaResponse.model_validate(atualizada_tarefa)
-                            print(f"Prioridade tarefa atualizada com sucesso para {response_schema.prioridade}")
-                        except ValueError as e:
-                            print(f"Erro nos dados inseridos: {e}")
+                            atualizada_tarefa = servico_tarefa.atualizar_tarefa(utilizador.id, tarefa_id, tarefa_update)
+                            print(f"Prioridade tarefa atualizada com sucesso para {atualizada_tarefa.prioridade}")
 
-                    elif sub_opcao == 3:
-                        tarefa_update = TarefaUpdate(concluida=True)
-                        update_tarefa = repo.atualizar(utilizador.id,tarefa_id,tarefa_update)
-                        resposta_tarefa = TarefaResponse.model_validate(update_tarefa)
-                        print(f"Tarefa está concluída? {resposta_tarefa.concluida}")
+                        elif sub_opcao == 3:
+                            tarefa_update = TarefaUpdate(concluida=True)
+                            update_tarefa = servico_tarefa.atualizar_tarefa(utilizador.id,tarefa_id,tarefa_update)
+                            print(f"Tarefa está concluída? {update_tarefa.concluida}")
 
-
-                    elif sub_opcao == 4:
-                        try:
+                        elif sub_opcao == 4:
                             novo_nome = input("Nome do tarefa: ")
                             nova_prioridade = int(input("Prioridade do tarefa: "))
                             tarefa_update = TarefaUpdate(nome=novo_nome,prioridade=nova_prioridade,concluida=True)
-                            tarefa_update = repo.atualizar(utilizador.id,tarefa_id,tarefa_update)
-                            tarefa_resposta = TarefaResponse.model_validate(tarefa_update)
-                            print(f"Informações da tarefa atualizados com sucesso! Nome: {tarefa_resposta.nome} | Prioridade: {tarefa_resposta.prioridade} | Concluida: {tarefa_resposta.concluida}")
+                            tarefa_update = servico_tarefa.atualizar_tarefa(utilizador.id,tarefa_id,tarefa_update)
+                            print(f"Informações da tarefa atualizados com sucesso! Nome: {tarefa_update.nome} | Prioridade: {tarefa_update.prioridade} | Concluida: {tarefa_update.concluida}")
                             break
-                        except ValueError as e:
-                            print(f"Erro nos dados inseridos: {e}")
 
-                    elif sub_opcao == 5:
-                        break
+                        elif sub_opcao == 5:
+                            break
 
-                    else:
-                        print("Opção inválida, digite entre 1 e 5")
+                        else:
+                            print("Opção inválida, digite entre 1 e 5")
+
+                    except ValidationError as e:
+                        print(f"Erro: {e}")
+                    except ValueError as e:
+                        print(f"Erro: {e}")
+                    except Exception as e:
+                        print(f"Erro inesperado: {e}")
 
             elif opcao == 4:
-                tarefas = repo.ver_todas_tarefas(utilizador.id)
-                if not tarefas:
-                    print("Sem tarefas guardadas")
+                try:
+                    tarefas = servico_tarefa.listar_todas_tarefas(utilizador.id)
+                    if not tarefas:
+                        print("Sem tarefas guardadas")
+                    else:
+                        print("\n--- Lista de tarefas ---")
+                        for tarefa in tarefas:
+                            estado = "[X]" if tarefa.concluida else "[ ]"
+                            print(f"ID {tarefa.id}: ({estado}) {tarefa.nome} | Prioridade: {tarefa.prioridade}")
 
-                print("\n--- Lista de tarefas ---")
-                for tarefa in tarefas:
-                    tarefa_response_schema = TarefaResponse.model_validate(tarefa)
-                    print(tarefa_response_schema)
+                except Exception as e:
+                    print(f"Erro inesperado: {e}")
 
             elif opcao == 5:
-                concluidas = repo.ver_tarefas_concluidas(utilizador.id)
-                if not concluidas:
-                    print("Sem tarefas guardadas")
-                print("\n--- Tarefas concluidas ---")
-                for tarefa in concluidas:
-                    schema_response_tarefa = TarefaResponse.model_validate(tarefa)
-                    print(schema_response_tarefa)
+                try:
+                    concluidas = servico_tarefa.listar_todas_tarefas_concluidas(utilizador.id)
+                    if not concluidas:
+                        print("Sem tarefas guardadas")
+                    else:
+                        print("\n--- Tarefas concluidas ---")
+                        for tarefa in concluidas:
+                            print(tarefa.nome)
+                except Exception as e:
+                    print(f"Erro inesperado: {e}")
 
             elif opcao == 6:
                 while True:

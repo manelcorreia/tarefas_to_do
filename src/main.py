@@ -90,11 +90,14 @@ def main():
             print("3 - Atualizar tarefa")
             print("4 - Ver todas as tarefas")
             print("5 - Ver tarefas concluidas")
-            print("6 - Meu perfil")
-            print("7 - Guardar e sair do programa")
+            print("6 - Ver tarefas com X prioridade")
+            print("7 - Ver tarefas com mínimo de X prioridade")
+            print("8 - Ver tarefas com máximo X de prioridade")
+            print("9 - Meu perfil")
+            print("10 - Guardar e sair do programa")
 
             try:
-                opcao = int(input("Opção (1 a 7): "))
+                opcao = int(input("Opção (1 a 10): "))
             except ValueError:
                 print("Opção tem de ser um número inteiro")
                 continue
@@ -216,6 +219,48 @@ def main():
                     print(f"Erro inesperado: {e}")
 
             elif opcao == 6:
+                try:
+                    prioridade_escolhida = int(input("Prioridade: "))
+                    tarefas = servico_tarefa.listar_tarefas_x_prioridade(utilizador.id, prioridade_escolhida)
+                    if not tarefas:
+                        print("Sem tarefas com essa prioridade")
+                    else:
+                        for tarefa in tarefas:
+                            print(f"ID {tarefa.id}: ({tarefa.nome} | prioridade: {tarefa.prioridade})")
+                except ValueError:
+                    print("Prioridade tem de ser um número inteiro")
+                except Exception as e:
+                    print(f"Erro inesperado: {e}")
+
+            elif opcao == 7:
+                try:
+                    prioridade_escolhida = int(input("Prioridade: "))
+                    tarefas = servico_tarefa.listar_tarefas_min_prioridade(utilizador.id, prioridade_escolhida)
+                    if not tarefas:
+                        print("Sem tarefas com esse mínimo de prioridade")
+                    else:
+                        for tarefa in tarefas:
+                            print(f"ID {tarefa.id}: ({tarefa.nome} | prioridade: {tarefa.prioridade})")
+                except ValueError:
+                    print("Prioridade tem de ser um número inteiro")
+                except Exception as e:
+                    print(f"Erro inesperado: {e}")
+
+            elif opcao == 8:
+                try:
+                    prioridade_escolhida = int(input("Prioridade: "))
+                    tarefas = servico_tarefa.listar_tarefas_max_prioridade(utilizador.id, prioridade_escolhida)
+                    if not tarefas:
+                        print("Sem tarefas com esse máximo de prioridade")
+                    else:
+                        for tarefa in tarefas:
+                            print(f"ID {tarefa.id}: ({tarefa.nome} | prioridade: {tarefa.prioridade})")
+                except ValueError:
+                    print("Prioridade tem de ser um número inteiro")
+                except Exception as e:
+                    print(f"Erro inesperado: {e}")
+
+            elif opcao == 9:
                 while True:
                     print("--- Meu Perfil ---")
                     perfil_utilizador = UtilizadorDetalhe.model_validate(utilizador)
@@ -303,7 +348,7 @@ def main():
             if utilizador is None:
                 break
 
-            elif opcao == 7:
+            elif opcao == 10:
                 break
 
             else:

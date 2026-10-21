@@ -43,7 +43,7 @@ class TarefaService:
                 raise ValueError("Não existe tarefa com esse id")
 
             if dados.nome is not None and dados.nome != tarefa.nome:
-                if self.repositorio.obter_por_nome(dados.utilizador_id, dados.nome):
+                if self.repositorio.obter_por_nome(utilizador_id, dados.nome):
                     raise ValueError("Já tens outra tarefa com esse nome")
 
             if dados.prioridade is not None and dados.prioridade == tarefa.prioridade:

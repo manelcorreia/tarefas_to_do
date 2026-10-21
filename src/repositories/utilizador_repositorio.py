@@ -12,8 +12,6 @@ class UtilizadorRepositorio:
         """registar novo utilizador"""
         novo_utilizador = UtilizadorModel(**dados.model_dump())
         self.session.add(novo_utilizador)
-        self.session.commit()
-        self.session.refresh(novo_utilizador)
         return novo_utilizador
 
     def obter_por_nome_utilizador(self, nome_utilizador: str) -> UtilizadorModel:
@@ -35,17 +33,13 @@ class UtilizadorRepositorio:
         for campo, valor in dados_utilizador.items():
             setattr(utilizador, campo, valor)
 
-        self.session.commit()
-        self.session.refresh(utilizador)
         return utilizador
 
     def apagar_utilizador(self, utilizador: UtilizadorModel) -> bool:
         """apagar utilizador"""
         if not utilizador:
             return False
-
         self.session.delete(utilizador)
-        self.session.commit()
         return True
 
     def fazer_login(self, email: str, password: str) -> UtilizadorModel | None:
@@ -63,3 +57,8 @@ class UtilizadorRepositorio:
         if utilizador:
             return True
         return False
+
+    def obter_utilizador_por_id(self, utilizador_id: int) -> UtilizadorModel | None:
+        """obter utilizador por id"""
+        utilizador = self.session.get(UtilizadorModel, utilizador_id)
+        return utilizador

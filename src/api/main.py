@@ -2,6 +2,7 @@ from fastapi import FastAPI
 import uvicorn
 
 from api.routers.tarefas import router as tarefas_router
+from api.routers.utilizadores import router_utilizador as utilizadores_router
 
 app = FastAPI(
     title="API Gestão de Tarefas To-Do",
@@ -10,6 +11,7 @@ app = FastAPI(
 )
 
 app.include_router(tarefas_router)
+app.include_router(utilizadores_router)
 
 def root():
     return {

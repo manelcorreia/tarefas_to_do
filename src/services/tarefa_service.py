@@ -9,7 +9,7 @@ class TarefaService:
         self.session = session
         self.repositorio = repositorio
 
-    def adicionar_nova_tarefa(self, dados: TarefaCreate) -> TarefaResponse | None:
+    def adicionar_nova_tarefa(self, dados: TarefaCreate) -> TarefaResponse:
         if self.repositorio.obter_por_nome(dados.utilizador_id, dados.nome):
             raise ValueError("Já existe uma tarefa registada com esse nome")
 
@@ -91,3 +91,6 @@ class TarefaService:
     def listar_tarefas_max_prioridade(self, utilizador_id: int, prioridade: int) -> list[TarefaResponse]:
         tarefas = self.repositorio.ver_tarefas_max_prioridade(utilizador_id, prioridade)
         return [TarefaResponse.model_validate(t) for t in tarefas]
+
+    def numero_tarefas_pendentes_por_prioridade(self, utilizador_id: int, prioridade: int) -> int:
+        return self.repositorio.contar_tarefas_ativas_por_prioridade(utilizador_id, prioridade)

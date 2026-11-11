@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 from src.models.tarefa_model import TarefaModel
 from src.schemas.tarefa_base_model import TarefaCreate, TarefaUpdate
@@ -50,6 +50,11 @@ class TarefaRepositorio:
         tarefas = list(self.session.scalars(comando).all())
         return tarefas
 
+    def ver_tarefas_nao_concluidas(self, utilizador_id: int) -> list[TarefaModel]:
+        """Ver todas as tarefas por concluir"""
+        comando = select(TarefaModel).where(TarefaModel.utilizador_id == utilizador_id, TarefaModel.concluida == False)
+        return list(self.session.scalars(comando).all())
+
     def ver_tarefas_de_x_prioridade(self, utilizador_id: int, prioridade: int) -> list[TarefaModel]:
         """ver todas as tarefas com prioridade igual à pedida"""
         comando = select(TarefaModel).where(TarefaModel.prioridade == prioridade, TarefaModel.utilizador_id == utilizador_id)
@@ -64,3 +69,8 @@ class TarefaRepositorio:
         """ver todas as tarefas com prioridade máxima igual à pedida"""
         comando = select(TarefaModel).where(TarefaModel.prioridade <= prioridade, TarefaModel.utilizador_id == utilizador_id)
         return list(self.session.scalars(comando).all())
+
+    def contar_tarefas_ativas_por_prioridade(self, utilizador_id: int, prioridade: int) -> int:
+        """Devolve a contagem de tarefas pendentes com a prioridade indicada"""
+        comando = select(func.count(TarefaModel)).where(TarefaModel.utilizador_id == utilizador_id, TarefaModel.prioridade == prioridade)
+        return self.session.execute(comando).scalar() or 0

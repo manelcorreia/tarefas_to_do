@@ -73,3 +73,7 @@ def delete_tarefa(utilizador_id: int, tarefa_id: int, service: TarefaServiceDep)
 @router.patch("/{tarefa_id}", response_model=TarefaResponse, status_code=status.HTTP_200_OK)
 def atualizar_tarefa(utilizador_id: int, tarefa_id: int, tarefa: TarefaUpdate, service: TarefaServiceDep):
     return service.atualizar_tarefa(utilizador_id, tarefa_id, tarefa)
+
+@router.get("/numero_tarefas_pendentes/prioridade_{prioridade}", response_model=int, status_code=status.HTTP_200_OK)
+def numero_tarefas_pendentes(utilizador_id: int, prioridade: int, service: TarefaServiceDep) -> int:
+    return service.numero_tarefas_pendentes_por_prioridade(utilizador_id, prioridade)

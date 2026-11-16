@@ -7,11 +7,11 @@ from schemas.tarefa_base_model import TarefaResponse, TarefaCreate, TarefaUpdate
 
 router = APIRouter(prefix="/tarefas", tags=["tarefas"])
 
-@router.post("", response_model=TarefaResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/nova_tarefa", response_model=TarefaResponse, status_code=status.HTTP_201_CREATED)
 def create_tarefas(tarefa: TarefaCreate, service: TarefaServiceDep):
     return service.adicionar_nova_tarefa(tarefa)
 
-@router.get("", response_model=list[TarefaResponse], status_code=status.HTTP_200_OK)
+@router.get("/lista", response_model=list[TarefaResponse], status_code=status.HTTP_200_OK)
 def lista_tarefas(
         utilizador_id: int,
         service: TarefaServiceDep,
@@ -59,21 +59,18 @@ def listar_tarefas_maior_que_prioridade(
 ):
     return service.listar_tarefas_min_prioridade(utilizador_id, prioridade)
 
-@router.get("/{tarefa_id}", response_model=TarefaResponse, status_code=status.HTTP_200_OK)
+@router.get("/tarefa/{tarefa_id}", response_model=TarefaResponse, status_code=status.HTTP_200_OK)
 def obter_tarefa(tarefa_id: int, utilizador_id: int, service: TarefaServiceDep):
-    try:
-        return service.obter_tarefa_por_id(utilizador_id, tarefa_id) #[cite: 8]
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    return service.obter_tarefa_por_id(utilizador_id, tarefa_id)
 
-@router.delete("/{tarefa_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/apagar_tarefa/{tarefa_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_tarefa(utilizador_id: int, tarefa_id: int, service: TarefaServiceDep):
     return service.remover_tarefa(utilizador_id, tarefa_id)
 
-@router.patch("/{tarefa_id}", response_model=TarefaResponse, status_code=status.HTTP_200_OK)
+@router.patch("/atualizar_tarefa/{tarefa_id}", response_model=TarefaResponse, status_code=status.HTTP_200_OK)
 def atualizar_tarefa(utilizador_id: int, tarefa_id: int, tarefa: TarefaUpdate, service: TarefaServiceDep):
     return service.atualizar_tarefa(utilizador_id, tarefa_id, tarefa)
 
-@router.get("/numero_tarefas_pendentes/prioridade_{prioridade}", response_model=int, status_code=status.HTTP_200_OK)
+@router.get("/pendentes/prioridade/{prioridade}", response_model=int, status_code=status.HTTP_200_OK)
 def numero_tarefas_pendentes(utilizador_id: int, prioridade: int, service: TarefaServiceDep) -> int:
     return service.numero_tarefas_pendentes_por_prioridade(utilizador_id, prioridade)

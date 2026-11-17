@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 
+from api.exceptions import EmailJaEmUso, NomeUtilizadorJaEmUso, UtilizadorNaoEncontrado
 from repositories.utilizador_repositorio import UtilizadorRepositorio
 from schemas.utilizador_base_model import UtilizadorResponse, UtilizadorCreate, UtilizadorUpdate, UtilizadorDetalhe
 
@@ -11,10 +12,10 @@ class UtilizadorService:
 
     def fazer_registo(self, dados: UtilizadorCreate) -> UtilizadorResponse | None:
         if self.repositorio.obter_por_email(dados.email):
-            raise ValueError("Já existe um utilizador registado com esse email")
+            raise EmailJaEmUso("Já existe um utilizador registado com esse email")
 
         if self.repositorio.obter_por_nome_utilizador(dados.nome_utilizador):
-            raise ValueError("Já existe um utilizador registado com esse nome de utilizador")
+            raise NomeUtilizadorJaEmUso("Já existe um utilizador registado com esse nome de utilizador")
 
         try:
             utilizador = self.repositorio.registar_utilizador(dados)
@@ -35,11 +36,11 @@ class UtilizadorService:
     def atualizar_dados_do_utilizador(self, dados: UtilizadorUpdate, utilizador_id: int) -> UtilizadorResponse:
         utilizador = self.repositorio.obter_utilizador_por_id(utilizador_id)
         if not utilizador:
-            raise ValueError("Utilizador não encontrado")
+            raise UtilizadorNaoEncontrado("Utilizador não encontrado")
 
         if dados.email is not None and dados.email != utilizador.email:
             if self.repositorio.obter_por_email(dados.email):
-                raise ValueError("Já existe esse email registado noutra conta")
+                raise EmailJaEmUso("Já existe esse email registado noutra conta")
 
         try:
             utilizador_atualizado = self.repositorio.atualizar_dados_utilizador(dados, utilizador)
@@ -59,7 +60,7 @@ class UtilizadorService:
     def apagar_conta(self, utilizador_id: int):
         utilizador = self.repositorio.obter_utilizador_por_id(utilizador_id)
         if not utilizador:
-            raise ValueError("Utilizador não encontrado")
+            raise UtilizadorNaoEncontrado("Utilizador não encontrado")
 
         try:
             utilizador_a_apagar = self.repositorio.apagar_utilizador(utilizador)
@@ -72,9 +73,5 @@ class UtilizadorService:
     def obter_perfil_com_detalhe(self, utilizador_id: int) -> UtilizadorDetalhe:
         utilizador = self.repositorio.obter_utilizador_por_id(utilizador_id)
         if not utilizador:
-            raise ValueError("Utilizador não encontrado")
-
-        try:
-            return UtilizadorDetalhe.model_validate(utilizador)
-        except Exception:
-            raise
+            raise UtilizadorNaoEncontrado("Utilizador não encontrado")
+        return UtilizadorDetalhe.model_validate(utilizador)

@@ -12,3 +12,12 @@ class TarefaJaConcluida(Exception):
 
 class TarefaNaoConcluida(Exception):
     pass
+
+class EmailJaEmUso(Exception):
+    pass
+
+class NomeUtilizadorJaEmUso(Exception):
+    pass
+
+class UtilizadorNaoEncontrado(Exception):
+    pass

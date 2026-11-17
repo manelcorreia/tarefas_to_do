@@ -3,7 +3,7 @@ import uvicorn
 from fastapi.responses import JSONResponse
 
 from api.exceptions import NaoExisteTarefaComID, JaExisteTarefaComNome, TarefaJaTemEssaPrioridade, TarefaNaoConcluida, \
-    TarefaJaConcluida
+    TarefaJaConcluida, EmailJaEmUso, NomeUtilizadorJaEmUso, UtilizadorNaoEncontrado
 from api.routers.tarefas import router as tarefas_router
 from api.routers.utilizadores import router_utilizador as utilizadores_router
 
@@ -35,6 +35,18 @@ def tarefa_ainda_nao_esta_concluida(request: Request, exc: TarefaNaoConcluida):
 @app.exception_handler(TarefaJaConcluida)
 def tarefa_ja_concluida(request: Request, exc: TarefaJaConcluida):
     return JSONResponse(status_code=409, content={"detail": str(exc)})
+
+@app.exception_handler(EmailJaEmUso)
+def email_ja_registado(request: Request, exc: EmailJaEmUso):
+    return JSONResponse(status_code=409, content={"detail": str(exc)})
+
+@app.exception_handler(NomeUtilizadorJaEmUso)
+def nome_utilizador_ja_registado(request: Request, exc: NomeUtilizadorJaEmUso):
+    return JSONResponse(status_code=409, content={"detail": str(exc)})
+
+@app.exception_handler(UtilizadorNaoEncontrado)
+def utilizador_nao_encontrado(request: Request, exc: UtilizadorNaoEncontrado):
+    return JSONResponse(status_code=404, content={"detail": str(exc)})
 
 @app.get("/")
 def root():
